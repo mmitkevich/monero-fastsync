@@ -53,7 +53,14 @@ func (b *BlocksHandler) HandleGetBlocks(req *rpc.WalletChainInfoV1) (*rpc.Wallet
 		return nil, ErrRequestError
 	}
 
+	for i := range chain {
+		logging.Log.Debugf("Short Chain %s", chain[i])
+	}
+
 	common, err := b.dbWorker.GetChainIntersection(chain)
+
+	logging.Log.Debugf("Common block %d, hash %s", common.Height, common.Hash)
+
 	if err != nil {
 		logging.Log.Errorf("Failed to get common block: %s", err.Error())
 		return nil, ErrInternalError
@@ -72,9 +79,10 @@ func (b *BlocksHandler) HandleGetBlocks(req *rpc.WalletChainInfoV1) (*rpc.Wallet
 		return nil, ErrInternalError
 	}
 
-	logging.Log.Infof("Processed %d blocks", len(blocks))
-
 	topHeight, err := b.dbWorker.GetTopBlockHeight()
+
+	logging.Log.Infof("Processed %d blocks until %d", len(blocks), topHeight)
+
 	if err != nil {
 		logging.Log.Errorf("Error while getting top block height: %s", err.Error())
 		return nil, ErrInternalError
